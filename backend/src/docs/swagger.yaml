@@ -1,0 +1,207 @@
+openapi: 3.0.0
+info:
+  title: Zorvyn Finance Dashboard API
+  version: 1.0.0
+  description: API for managing transactions and viewing financial dashboard metrics.
+servers:
+  - url: /api/v1
+    description: API v1 Local Server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      tags:
+        - Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: User created
+        '400':
+          description: Validation failed
+          
+  /auth/login:
+    post:
+      summary: Login user
+      tags:
+        - Auth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Logged in successfully
+          
+  /auth/me:
+    get:
+      summary: Get current authenticated user
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: User details
+
+  /dashboard/summary:
+    get:
+      summary: Get high level KPI summary
+      tags:
+        - Dashboard
+      responses:
+        '200':
+          description: Summary data returned
+
+  /dashboard/categories:
+    get:
+      summary: Get totals by category
+      tags:
+        - Dashboard
+      responses:
+        '200':
+          description: Categories total returned
+
+  /dashboard/trends:
+    get:
+      summary: Get income and expenses over time
+      tags:
+        - Dashboard
+      parameters:
+        - in: query
+          name: months
+          schema:
+            type: integer
+            default: 6
+        - in: query
+          name: granularity
+          schema:
+            type: string
+            enum: [month, week]
+            default: month
+      responses:
+        '200':
+          description: Trend data returned
+
+  /transactions:
+    get:
+      summary: List transactions (Admin, Analyst)
+      tags:
+        - Transactions
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Transactions paginated list
+    post:
+      summary: Create new transaction
+      tags:
+        - Transactions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+                - type
+                - category
+                - date
+              properties:
+                amount:
+                  type: number
+                type:
+                  type: string
+                  enum: [INCOME, EXPENSE]
+                category:
+                  type: string
+                date:
+                  type: string
+                  format: date-time
+                note:
+                  type: string
+      responses:
+        '201':
+          description: Transaction created
+          
+  /transactions/{id}:
+    patch:
+      summary: Update a transaction
+      tags:
+        - Transactions
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+      responses:
+        '200':
+          description: Transaction updated
+    delete:
+      summary: Delete a transaction
+      tags:
+        - Transactions
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transaction soft-deleted
