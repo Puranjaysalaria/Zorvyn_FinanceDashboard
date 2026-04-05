@@ -20,11 +20,12 @@ app.use(helmet());
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
         callback(null, true);
         return;
       }
 
+      console.error(`Blocked CORS request from origin: ${origin}`);
       callback(new Error("CORS origin not allowed"));
     }
   })
