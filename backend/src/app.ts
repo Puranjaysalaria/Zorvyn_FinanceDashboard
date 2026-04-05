@@ -9,6 +9,7 @@ import path from "path";
 import { env } from "./config/env";
 import { errorHandler, notFoundHandler } from "./middleware/error";
 import { router } from "./routes";
+import { AppError } from "./utils/AppError";
 
 export const app = express();
 const allowedOrigins = env.CORS_ORIGIN.split(",").map((origin) => origin.trim());
@@ -20,13 +21,13 @@ app.use(helmet());
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
+      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development' || origin.includes('onrender.com')) {
         callback(null, true);
         return;
       }
 
       console.error(`Blocked CORS request from origin: ${origin}`);
-      callback(new Error("CORS origin not allowed"));
+      callback(new AppError("CORS origin not allowed", 403));
     }
   })
 );
